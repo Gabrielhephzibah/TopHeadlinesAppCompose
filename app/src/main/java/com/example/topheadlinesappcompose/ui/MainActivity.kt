@@ -19,11 +19,15 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CornerSize
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -42,8 +46,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.navigation.NavController
+import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.findNavController
 import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
@@ -66,23 +73,29 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         setContent {
             TopHeadlinesAppComposeTheme {
+                val navController = rememberNavController()
+                val backStackEntry by navController.currentBackStackEntryAsState()
                 // A surface container using the 'background' color from the theme
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
                     Column(modifier = Modifier.fillMaxSize()) {
-                        TopAppBar()
+                        TopAppBar(navController = navController)
                         NavHost(
-                            navController = rememberNavController(),
+                            navController = navController,
                             startDestination = TopHeadlinesScreens.HeadLineList.name ){
                             composable(TopHeadlinesScreens.HeadLineList.name){
-                                TopHeadlinesListScreen()
+                                TopHeadlinesListScreen(
+                                    onItemClicked = {
+                                        println("Zibah:::Navigated to next screen")
+                                        navController.navigate(TopHeadlinesScreens.HeadLineDetails.name)
+                                    }
+                                )
                             }
                             composable(TopHeadlinesScreens.HeadLineDetails.name){
                                 TopHeadlinesDetailsScreen()
                             }
-
                         }
 
                         //buttonClick()
@@ -107,17 +120,22 @@ class MainActivity : ComponentActivity() {
         }
     }
 }
-//@Composable
-//fun setUpNavigation(){
-////    NavHost(navController = rememberNavController(), startDestination = "First"){
-////        composable("First"){
-////            FirstScreen()
-////        }
-////        composable("Second"){
-////            SecondScreen()
-////        }
-////    }
-//}
+@Composable
+fun setUpBackNavigation(navController: NavHostController){
+
+//    val backStackEntry by navController.currentBackStackEntryAsState()
+//    val currentScreen = TopHeadlinesScreens.valueOf(
+//        backStackEntry?.destination?.route ?: TopHeadlinesScreens.HeadLineList.name
+//    )
+//    NavHost(navController = rememberNavController(), startDestination = "First"){
+//        composable("First"){
+//            FirstScreen()
+//        }
+//        composable("Second"){
+//            SecondScreen()
+//        }
+//    }
+}
 
 
 //fun goToNextScreen(context: Context, topHeadlinesItem: TopHeadlinesItem?) {
@@ -169,17 +187,14 @@ class MainActivity : ComponentActivity() {
 //    }
 //
 //}
-
 //@Composable
 //fun TopHeadLineList(topHeadlinesItem: List<TopHeadlinesItem>?){
 //    LazyColumn(modifier = Modifier.fillMaxSize())
 //    {
-//        topHeadlinesItem?.size?.let {
-//            items(it) { i ->
-//                TopHeadLinesItemComposable(topHeadlinesItem = topHeadlinesItem[i])
+//         items(10) {i ->
+//             TopHeadLinesItemComposable(topHeadlinesItem = topHeadlinesItem?.get(i))
 //
-//            }
-//        }
+//         }
 //    }
 //
 //}
@@ -205,6 +220,8 @@ class MainActivity : ComponentActivity() {
 //    ) {
 //   Row {
 //       Box(modifier = Modifier.fillMaxWidth(),
+//
+//
 //       ){
 //           GlideImage(
 //               model = topHeadlinesItem?.imageUrl,
@@ -260,7 +277,7 @@ class MainActivity : ComponentActivity() {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun TopAppBar(){
+fun TopAppBar( navController : NavHostController ){
     CenterAlignedTopAppBar(
         title = {
             Text(
@@ -272,11 +289,21 @@ fun TopAppBar(){
         colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
             containerColor = Color.Black,
             titleContentColor = Color.White
-        )
+        ),
+        navigationIcon = {
+                IconButton(onClick = {
+                    navController.navigateUp()
+                }) {
+                    Icon(
+                        imageVector = Icons.Filled.ArrowBack,
+                        contentDescription = "back",
+                        tint = Color.White
+                    )
+                }
+
+        }
 
     )
-
-
 }
 
 @Preview(showBackground = true)

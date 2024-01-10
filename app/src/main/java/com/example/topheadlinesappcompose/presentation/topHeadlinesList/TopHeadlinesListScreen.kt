@@ -39,16 +39,16 @@ import com.example.topheadlinesappcompose.utils.Resource
 import com.example.topheadlinesappcompose.utils.extensions.formatDate
 
 @Composable
-fun TopHeadlinesListScreen() {
-    getTopHeadlines()
-
-
-
+fun TopHeadlinesListScreen(
+    onItemClicked: () -> Unit
+) {
+    getTopHeadlines(onItemClicked)
 }
+
 
 @OptIn(ExperimentalGlideComposeApi::class)
 @Composable
-fun TopHeadLinesItemComposable(topHeadlinesItem: TopHeadlinesItem?){
+fun TopHeadLinesItemComposable(topHeadlinesItem: TopHeadlinesItem?, onItemClicked: ()-> Unit){
     val context = LocalContext.current
     Card(
         modifier = Modifier
@@ -56,6 +56,7 @@ fun TopHeadLinesItemComposable(topHeadlinesItem: TopHeadlinesItem?){
             .padding(horizontal = 7.dp, vertical = 10.dp)
             .clickable {
                        println("Zibah::: I am using compose navigation")
+                onItemClicked()
                 //goToNextScreen(context, topHeadlinesItem)
             },
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
@@ -105,7 +106,7 @@ fun TopHeadLinesItemComposable(topHeadlinesItem: TopHeadlinesItem?){
                     Spacer(modifier = Modifier.size(5.dp))
                     Text(
                         modifier = Modifier.fillMaxWidth(),
-                        text = topHeadlinesItem?.publishedAt?.formatDate().toString(),
+                        text = topHeadlinesItem?.publishedAt.toString(),
                         color = Color.White,
                         fontWeight = FontWeight.Bold,
                         fontFamily = nunitoFontFamilyBold,
@@ -124,17 +125,22 @@ fun TopHeadLinesItemComposable(topHeadlinesItem: TopHeadlinesItem?){
 }
 
 @Composable
-fun TopHeadLineList(topHeadlinesItem: List<TopHeadlinesItem>?){
+fun TopHeadLineList(topHeadlinesItem: List<TopHeadlinesItem>?, onItemClicked: ()-> Unit){
     LazyColumn(modifier = Modifier.fillMaxSize())
     {
-        items(10) {i ->
-           TopHeadLinesItemComposable(topHeadlinesItem = topHeadlinesItem?.get(i))
+        topHeadlinesItem?.size?.let {
+            items(it) { i ->
+                TopHeadLinesItemComposable(
+                    topHeadlinesItem = topHeadlinesItem[i],
+                    onItemClicked = onItemClicked
+                )
+            }
         }
     }
 }
 
 @Composable
-fun getTopHeadlines() {
+fun getTopHeadlines(onItemClicked: () -> Unit) {
     val topViewModel : TopHeadlineViewModel = hiltViewModel()
 //    val lifecycle = LocalLifecycleOwner.current
 //    LaunchedEffect(Unit){
@@ -159,7 +165,7 @@ fun getTopHeadlines() {
         is Resource.Success -> {
             println("SUCCESS::: ${response.data}")
             val data = response.data
-            TopHeadLineList(topHeadlinesItem = data)
+            TopHeadLineList(topHeadlinesItem = data, onItemClicked = onItemClicked)
         }
     }
 
@@ -168,7 +174,9 @@ fun getTopHeadlines() {
 @Preview
 @Composable
 fun TopHeadlinesListPreview(){
-    TopHeadlinesListScreen()
+    TopHeadlinesListScreen(onItemClicked = {
+
+    })
 }
 
 
