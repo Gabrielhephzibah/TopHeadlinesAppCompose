@@ -5,6 +5,8 @@ import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.animation.EnterTransition
+import androidx.compose.animation.ExitTransition
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -29,10 +31,12 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -46,13 +50,16 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.navigation.NavArgument
 import androidx.navigation.NavController
 import androidx.navigation.NavHostController
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.findNavController
+import androidx.navigation.navArgument
 import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
 import com.bumptech.glide.integration.compose.GlideImage
 import com.example.topheadlinesappcompose.domain.model.TopHeadlinesItem
@@ -65,6 +72,7 @@ import com.example.topheadlinesappcompose.presentation.topHeadlinesList.TopHeadl
 import com.example.topheadlinesappcompose.utils.Resource
 import com.example.topheadlinesappcompose.utils.extensions.formatDate
 import dagger.hilt.android.AndroidEntryPoint
+import java.util.Base64
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
@@ -81,22 +89,82 @@ class MainActivity : ComponentActivity() {
                     color = MaterialTheme.colorScheme.background
                 ) {
                     Column(modifier = Modifier.fillMaxSize()) {
-                        TopAppBar(navController = navController)
-                        NavHost(
-                            navController = navController,
-                            startDestination = TopHeadlinesScreens.HeadLineList.name ){
-                            composable(TopHeadlinesScreens.HeadLineList.name){
-                                TopHeadlinesListScreen(
-                                    onItemClicked = {
-                                        println("Zibah:::Navigated to next screen")
-                                        navController.navigate(TopHeadlinesScreens.HeadLineDetails.name)
-                                    }
-                                )
-                            }
-                            composable(TopHeadlinesScreens.HeadLineDetails.name){
-                                TopHeadlinesDetailsScreen()
-                            }
-                        }
+                        TopHeadlinesApp()
+                       // TopAppBar(navController = navController)
+//                        NavHost(
+//                            navController = navController,
+//                            startDestination = TopHeadlinesScreens.HeadLineList.name,
+//                            enterTransition = {
+//                                EnterTransition.None
+//                            },
+//                            exitTransition =  {
+//                                ExitTransition.None
+//                            },
+//                            popEnterTransition = {
+//                                EnterTransition.None
+//                            },
+//                            popExitTransition = {
+//                                ExitTransition.None
+//                            }
+//                        ) {
+//                            composable(TopHeadlinesScreens.HeadLineList.name) {
+//                                TopHeadlinesListScreen(
+//                                    onItemClicked = {
+//                                        println("Zibah:::Navigated to next screen")
+//                                        println("Zibah:::$it")
+//                                        val encodedContent =  Base64.getUrlEncoder().encodeToString(it?.content?.toByteArray())
+//                                        navController.navigate(
+//                                            route = TopHeadlinesScreens.HeadLineDetails.name +
+//                                                    "?${it?.title}" + "?${it?.description}"
+//                                                    + "/$encodedContent"
+//                                                    + "?${it?.imageUrl}",
+////                                           argument = listOf(
+////                                               navArgument("title") { type = NavType.StringType },
+////                                               navArgument("description") { type = NavType.StringType },
+////                                               navArgument("author") { type = NavType.StringType },
+////
+////                                           )
+//                                        )
+//                                    }
+//                                )
+//                            }
+//                            composable(
+//                                TopHeadlinesScreens.HeadLineDetails.name + "?{title}" + "?{description}"
+//                                         + "/{content}"
+//                                        + "?{imageUrl}",
+//                                arguments = listOf(
+//                                    navArgument("title") {
+//                                        type = NavType.StringType
+//                                        defaultValue = ""
+//                                        nullable = true
+//                                    },
+//                                    navArgument("description") {
+//                                        type = NavType.StringType
+//                                        defaultValue = ""
+//                                        nullable = true
+//                                    },
+//                                    navArgument("content") {
+//                                        type = NavType.StringType
+//                                        },
+//                                    navArgument("imageUrl") {
+//                                        type = NavType.StringType
+//                                        defaultValue = ""
+//                                        nullable = true
+//                                    }
+//                                )
+//                            ) { navArgument ->
+//                                val title = navArgument.arguments?.getString("title")
+//                                val desc = navArgument.arguments?.getString("description")
+//                                val content = navArgument.arguments?.getString("content")
+//                                val imgUrl = navArgument.arguments?.getString("imageUrl")
+//                                TopHeadlinesDetailsScreen(navController,
+//                                    title,
+//                                    desc,
+//                                    imgUrl,
+//                                    content
+//                                )
+//                            }
+//                        }
 
                         //buttonClick()
                         //getTopHeadlines()
@@ -120,8 +188,110 @@ class MainActivity : ComponentActivity() {
         }
     }
 }
+
 @Composable
-fun setUpBackNavigation(navController: NavHostController){
+fun TopHeadlinesApp(navController: NavHostController = rememberNavController()) {
+    // Get current back stack entry
+    val backStackEntry by navController.currentBackStackEntryAsState()
+    // Get the name of the current screen
+//    val currentScreen = TopHeadlinesScreens.valueOf(
+//        backStackEntry?.destination?.route?: TopHeadlinesScreens.HeadLineList.name
+//    )
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                canNavigateBack = navController.previousBackStackEntry != null,
+                navigateUp = { navController.navigateUp() }
+
+            )
+        }
+    ) { innerPadding ->
+        NavHost(
+            navController = navController,
+            startDestination = TopHeadlinesScreens.HeadLineList.name,
+            enterTransition = {
+                EnterTransition.None
+            },
+            exitTransition =  {
+                ExitTransition.None
+            },
+            popEnterTransition = {
+                EnterTransition.None
+            },
+            popExitTransition = {
+                ExitTransition.None
+            },
+            modifier = Modifier.padding(innerPadding)
+        ) {
+            composable(TopHeadlinesScreens.HeadLineList.name) {
+                TopHeadlinesListScreen(
+                    onItemClicked = {
+                        println("Zibah:::Navigated to next screen")
+                        println("Zibah:::$it")
+                       // navController.currentBackStackEntry?.savedStateHandle?.set("data", it)
+                        val encodedContent =  Base64.getUrlEncoder().encodeToString(it?.content?.toByteArray())
+                        navController.navigate(
+                            route = TopHeadlinesScreens.HeadLineDetails.name +
+                                    "?${it?.title}" + "?${it?.description}"
+                                    + "/$encodedContent"
+                                    + "?${it?.imageUrl}",
+//                                           argument = listOf(
+//                                               navArgument("title") { type = NavType.StringType },
+//                                               navArgument("description") { type = NavType.StringType },
+//                                               navArgument("author") { type = NavType.StringType },
+//
+//                                           )
+                        )
+                    }
+                )
+            }
+            composable(
+                TopHeadlinesScreens.HeadLineDetails.name + "?{title}" + "?{description}"
+                        + "/{content}"
+                        + "?{imageUrl}",
+                arguments = listOf(
+                    navArgument("title") {
+                        type = NavType.StringType
+                        defaultValue = ""
+                        nullable = true
+                    },
+                    navArgument("description") {
+                        type = NavType.StringType
+                        defaultValue = ""
+                        nullable = true
+                    },
+                    navArgument("content") {
+                        type = NavType.StringType
+                    },
+                    navArgument("imageUrl") {
+                        type = NavType.StringType
+                        defaultValue = ""
+                        nullable = true
+                    }
+                )
+            ) { navArgument ->
+//                LaunchedEffect(key1 = navArgument){
+//                    val result = navController.previousBackStackEntry.savedStateHandle.get<TopHeadlinesItem>(
+//                        "data"
+//                    )
+//                }
+
+                val title = navArgument.arguments?.getString("title")
+                val desc = navArgument.arguments?.getString("description")
+                val content = navArgument.arguments?.getString("content")
+                val imgUrl = navArgument.arguments?.getString("imageUrl")
+                TopHeadlinesDetailsScreen(navController,
+                    title,
+                    desc,
+                    imgUrl,
+                    content
+                )
+            }
+        }
+
+
+
+    }
 
 //    val backStackEntry by navController.currentBackStackEntryAsState()
 //    val currentScreen = TopHeadlinesScreens.valueOf(
@@ -274,14 +444,24 @@ fun setUpBackNavigation(navController: NavHostController){
 //
 //
 //}
+//@Composable
+//fun TopHeadlines(){
+//
+//}
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun TopAppBar( navController : NavHostController ){
+fun TopAppBar(
+              //currentScreen: TopHeadlinesScreens,
+              canNavigateBack: Boolean,
+              navigateUp: () -> Unit,
+              modifier: Modifier = Modifier
+) {
     CenterAlignedTopAppBar(
         title = {
             Text(
-                text = "BBC News",
+                text =  "BBC NEWS",//currentScreen.name,
                 color = Color.White,
                 fontWeight = FontWeight.Bold
             )
@@ -290,17 +470,22 @@ fun TopAppBar( navController : NavHostController ){
             containerColor = Color.Black,
             titleContentColor = Color.White
         ),
+        modifier = modifier,
         navigationIcon = {
-                IconButton(onClick = {
-                    navController.navigateUp()
-                }) {
+//            val backStackEntry = navController.previousBackStackEntry
+//            println("Zibah:: BACK $backStackEntry")
+           // if (canNavigateBack) {
+                IconButton(
+                    onClick =
+                    navigateUp
+                ) {
                     Icon(
                         imageVector = Icons.Filled.ArrowBack,
                         contentDescription = "back",
                         tint = Color.White
                     )
-                }
-
+                //}
+            }
         }
 
     )

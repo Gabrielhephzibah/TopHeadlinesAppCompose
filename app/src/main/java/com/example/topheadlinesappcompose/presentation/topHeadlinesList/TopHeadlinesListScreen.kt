@@ -36,27 +36,28 @@ import com.bumptech.glide.integration.compose.GlideImage
 import com.example.topheadlinesappcompose.domain.model.TopHeadlinesItem
 import com.example.topheadlinesappcompose.ui.theme.nunitoFontFamilyBold
 import com.example.topheadlinesappcompose.utils.Resource
-import com.example.topheadlinesappcompose.utils.extensions.formatDate
 
 @Composable
 fun TopHeadlinesListScreen(
-    onItemClicked: () -> Unit
+    onItemClicked: (TopHeadlinesItem?) -> Unit
 ) {
-    getTopHeadlines(onItemClicked)
+    GetTopHeadlines(
+        onItemClicked
+    )
 }
 
 
 @OptIn(ExperimentalGlideComposeApi::class)
 @Composable
-fun TopHeadLinesItemComposable(topHeadlinesItem: TopHeadlinesItem?, onItemClicked: ()-> Unit){
+fun TopHeadLinesItemComposable(topHeadlinesItem: TopHeadlinesItem?, onItemClicked: (TopHeadlinesItem?) -> Unit){
     val context = LocalContext.current
     Card(
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 7.dp, vertical = 10.dp)
             .clickable {
-                       println("Zibah::: I am using compose navigation")
-                onItemClicked()
+                    onItemClicked(topHeadlinesItem)
+
                 //goToNextScreen(context, topHeadlinesItem)
             },
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
@@ -125,7 +126,7 @@ fun TopHeadLinesItemComposable(topHeadlinesItem: TopHeadlinesItem?, onItemClicke
 }
 
 @Composable
-fun TopHeadLineList(topHeadlinesItem: List<TopHeadlinesItem>?, onItemClicked: ()-> Unit){
+fun TopHeadLineList(topHeadlinesItem: List<TopHeadlinesItem>?, onItemClicked: (TopHeadlinesItem?)-> Unit){
     LazyColumn(modifier = Modifier.fillMaxSize())
     {
         topHeadlinesItem?.size?.let {
@@ -140,7 +141,7 @@ fun TopHeadLineList(topHeadlinesItem: List<TopHeadlinesItem>?, onItemClicked: ()
 }
 
 @Composable
-fun getTopHeadlines(onItemClicked: () -> Unit) {
+fun GetTopHeadlines(onItemClicked: (TopHeadlinesItem?) -> Unit) {
     val topViewModel : TopHeadlineViewModel = hiltViewModel()
 //    val lifecycle = LocalLifecycleOwner.current
 //    LaunchedEffect(Unit){

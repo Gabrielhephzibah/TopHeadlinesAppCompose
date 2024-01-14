@@ -1,6 +1,6 @@
 package com.example.topheadlinesappcompose.presentation.navigation
 
-enum class TopHeadlinesScreens(name: String) {
+enum class TopHeadlinesScreens(route: String) {
     HeadLineList("headlineScreen"),
-    HeadLineDetails("headlineDetailScreen")
+    HeadLineDetails("HeadLineDetails" + "?{title}" + "?{description}" + "?{description}" + "/{content}" + "?{imageUrl}")
 }
