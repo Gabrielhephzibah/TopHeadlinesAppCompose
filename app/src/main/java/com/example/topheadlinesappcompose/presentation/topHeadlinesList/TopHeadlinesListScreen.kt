@@ -11,11 +11,15 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CornerSize
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -36,6 +40,7 @@ import com.bumptech.glide.integration.compose.GlideImage
 import com.example.topheadlinesappcompose.domain.model.TopHeadlinesItem
 import com.example.topheadlinesappcompose.ui.theme.nunitoFontFamilyBold
 import com.example.topheadlinesappcompose.utils.Resource
+import com.example.topheadlinesappcompose.utils.extensions.formatDate
 
 @Composable
 fun TopHeadlinesListScreen(
@@ -56,9 +61,7 @@ fun TopHeadLinesItemComposable(topHeadlinesItem: TopHeadlinesItem?, onItemClicke
             .fillMaxWidth()
             .padding(horizontal = 7.dp, vertical = 10.dp)
             .clickable {
-                    onItemClicked(topHeadlinesItem)
-
-                //goToNextScreen(context, topHeadlinesItem)
+                onItemClicked(topHeadlinesItem)
             },
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
         colors = CardDefaults.cardColors(
@@ -82,15 +85,6 @@ fun TopHeadLinesItemComposable(topHeadlinesItem: TopHeadlinesItem?, onItemClicke
                         .fillMaxWidth()
 
                 )
-//           Image(
-//               painter = painterResource(id = R.drawable.wall),
-//               contentDescription = "background",
-//               contentScale = ContentScale.FillBounds,
-//               modifier = Modifier
-//                   .height(200.dp)
-//                   .fillMaxWidth()
-//                   //.matchParentSize()
-//           )
                 Column(
                     modifier = Modifier
                         .padding(16.dp)
@@ -107,7 +101,7 @@ fun TopHeadLinesItemComposable(topHeadlinesItem: TopHeadlinesItem?, onItemClicke
                     Spacer(modifier = Modifier.size(5.dp))
                     Text(
                         modifier = Modifier.fillMaxWidth(),
-                        text = topHeadlinesItem?.publishedAt.toString(),
+                        text = topHeadlinesItem?.publishedAt.toString().formatDate(),
                         color = Color.White,
                         fontWeight = FontWeight.Bold,
                         fontFamily = nunitoFontFamilyBold,
@@ -161,23 +155,71 @@ fun GetTopHeadlines(onItemClicked: (TopHeadlinesItem?) -> Unit) {
 
     val response by topViewModel.getTopHeadlines.collectAsStateWithLifecycle(Resource.Loading)
     when(response){
-        is Resource.Error -> print("ERROR:::${response.error}")
-        Resource.Loading -> println("Loading")
+        is Resource.Error -> {
+            ShowError()
+        }
+        Resource.Loading -> {
+           LoadProgressBar()
+        }
         is Resource.Success -> {
             println("SUCCESS::: ${response.data}")
             val data = response.data
             TopHeadLineList(topHeadlinesItem = data, onItemClicked = onItemClicked)
         }
     }
+}
 
+@Composable
+fun LoadProgressBar(){
+//    Column(
+//        modifier = Modifier.fillMaxSize(),
+//        verticalArrangement = Arrangement.Center,
+//        horizontalAlignment = Alignment.CenterHorizontally
+//    ) {
+//        CircularProgressIndicator(
+//            color = Color.Black,
+//            trackColor = MaterialTheme.colorScheme.surfaceVariant,
+//        )
+//        //CircularProgressIndicator()
+//    }
+
+    Box(
+        contentAlignment = Alignment.Center,
+        modifier = Modifier.fillMaxSize()
+    ) {
+        CircularProgressIndicator(
+            color = Color.Black,
+            trackColor = MaterialTheme.colorScheme.surfaceVariant,
+        )
+    }
+
+}
+@Composable
+fun ShowError(){
+   Column(
+       modifier = Modifier.fillMaxSize(),
+       horizontalAlignment = Alignment.CenterHorizontally,
+       verticalArrangement = Arrangement.Center
+   ) {
+     Text(
+         text = "Connection Error, please try again later",
+         color = Color.Black,
+         fontSize = 20.sp
+     )
+   }
 }
 
 @Preview
 @Composable
 fun TopHeadlinesListPreview(){
-    TopHeadlinesListScreen(onItemClicked = {
+    Surface(
+        modifier = Modifier.fillMaxSize()
+    ) {
+        ShowError()
+    }
 
-    })
+
+
 }
 
 

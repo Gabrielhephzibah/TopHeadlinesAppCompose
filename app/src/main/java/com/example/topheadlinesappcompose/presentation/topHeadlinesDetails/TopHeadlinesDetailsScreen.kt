@@ -29,40 +29,16 @@ import com.example.topheadlinesappcompose.ui.theme.tieneFontFamily
 import java.util.Base64
 
 @Composable
-fun TopHeadlinesDetailsScreen(navController:NavController,
-                              title: String?,
-                              description: String?,
-                              imageUrl: String?,
-                              content: String?) {
-   // val dataIntent = intent
-    TopHeadLinesDetails(title, description, imageUrl, content)
-    println("Zibah:::Data::$title $imageUrl")
-//    val backStackEntry = navController.previousBackStackEntry
-//    println("Zibah:: BACK $backStackEntry")
-
+fun TopHeadlinesDetailsScreen(topHeadlinesItem: TopHeadlinesItem?) {
+    TopHeadLinesDetails(topHeadlinesItem)
 }
 
 @OptIn(ExperimentalGlideComposeApi::class)
 @Composable
-fun TopHeadLinesDetails(title: String?,
-                        description: String?,
-                        imageUrl: String?,
-                        content: String?) {
-
-    val decodeContent = String(Base64.getUrlDecoder().decode(content))
-    //val getData  = navController.previousBackStackEntry?.arguments?.getParcelable("data")
-//    val data = remember {
-//        mutableStateOf(navController.previousBackStackEntry?.arguments?.getParcelable<TopHeadlinesItem>("data")!!)
-//    }
-   // println("Zibah:::Data::$getData")
-//    val getData  = navController.previousBackStackEntry?.savedStateHandle?.get<DestinationScreenArgument>(
-//        "detailArgument"
-//    )
-   // val data = intent.getParcelableExtra<TopHeadlinesItem?>("data")
-    //println("DATA:: $data")
+fun TopHeadLinesDetails(topHeadlinesItem: TopHeadlinesItem?) {
     Column {
         GlideImage(
-            model = imageUrl,
+            model = topHeadlinesItem?.imageUrl,
             contentDescription = "background Image",
             contentScale = ContentScale.FillBounds,
             modifier = Modifier
@@ -70,16 +46,6 @@ fun TopHeadLinesDetails(title: String?,
                 .fillMaxWidth()
 
         )
-//        Image(
-//            painter = painterResource(
-//                id = R.drawable.wall
-//            ),
-//            contentScale = ContentScale.FillBounds,
-//            contentDescription = "image",
-//            modifier = Modifier
-//                .height(200.dp)
-//                .fillMaxWidth()
-//        )
         Column(
             modifier =
             Modifier
@@ -87,7 +53,7 @@ fun TopHeadLinesDetails(title: String?,
                 .padding(horizontal = 20.dp)
         ) {
             Text(
-                text =  title.toString(),
+                text =  topHeadlinesItem?.title.toString(),
                 fontSize = 20.sp,
                 fontFamily = FontFamily.SansSerif,
                 fontWeight = FontWeight.Bold,
@@ -95,12 +61,12 @@ fun TopHeadLinesDetails(title: String?,
             )
 
             Text(
-                text =  description.toString(),//data?.description.toString(),
+                text =  topHeadlinesItem?.description.toString(),
                 fontSize = 15.sp,
                 fontStyle = FontStyle.Italic,
                 fontFamily = nunitoFontFamilyLight
             )
-            Text(text =  decodeContent, //data?.content.toString(),
+            Text(text =  topHeadlinesItem?.content.toString(),
                 modifier = Modifier.padding(vertical = 15.dp),
                 fontSize = 15.sp,
                 fontFamily = tieneFontFamily
